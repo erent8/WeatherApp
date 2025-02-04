@@ -77,8 +77,8 @@ Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için [LICENSE](LICE
 
 ## İletişim 📧
 
-[erenterzi@protonmail.com]
-[https://x.com/therenn8]
+erenterzi@protonmail.com <br>
+https://x.com/therenn8
 
 ---
 ⭐️ Bu projeyi beğendiyseniz yıldızlamayı unutmayın!

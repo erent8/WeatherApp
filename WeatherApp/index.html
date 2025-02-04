@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeatherApp</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M6,19C3.79,19,2,17.21,2,15c0-2.21,1.79-4,4-4c0.38,0,0.74,0.05,1.09,0.14C7.03,10.8,7,10.44,7,10.08C7,7.27,9.27,5,12.08,5c2.81,0,5.08,2.27,5.08,5.08c0,0.36-0.03,0.72-0.09,1.06C17.42,11.05,17.79,11,18.17,11c2.21,0,4,1.79,4,4c0,2.21-1.79,4-4,4H6z' fill='%2364b5f6'/><path d='M11,14L9,14L13,7L13,10L15,10L11,17Z' fill='%23ffd700'/><path d='M8,20L7.5,22' stroke='%2364b5f6' stroke-width='0.5' stroke-linecap='round'/><path d='M12,20L11.5,22' stroke='%2364b5f6' stroke-width='0.5' stroke-linecap='round'/><path d='M16,20L15.5,22' stroke='%2364b5f6' stroke-width='0.5' stroke-linecap='round'/></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="theme-switch" id="themeSwitch">
+        <div class="theme-switch-container">
+            <div class="theme-slider">
+                <div class="theme-icon sun">
+                    <svg viewBox="0 0 24 24" width="24" height="24">
+                        <circle cx="12" cy="12" r="6" fill="currentColor"/>
+                        <path stroke="currentColor" stroke-width="2" stroke-linecap="round" 
+                            d="M12,2 L12,4 M12,20 L12,22 M2,12 L4,12 M20,12 L22,12 M4.93,4.93 L6.34,6.34 M17.66,17.66 L19.07,19.07 M4.93,19.07 L6.34,17.66 M17.66,6.34 L19.07,4.93"/>
+                    </svg>
+                </div>
+                <div class="theme-icon moon">
+                    <svg viewBox="0 0 24 24" width="24" height="24">
+                        <path fill="currentColor" d="M12,3 C7.03,3 3,7.03 3,12 C3,16.97 7.03,21 12,21 C16.97,21 21,16.97 21,12 C21,11.54 20.96,11.08 20.9,10.64 C19.92,12.01 18.32,13 16.5,13 C13.74,13 11.5,10.76 11.5,8 C11.5,6.18 12.49,4.58 13.86,3.6 C13.42,3.54 12.96,3.5 12.5,3.5 L12,3 Z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="favorites-button" id="favoritesBtn">
+        <i class="fas fa-star"></i>
+    </div>
+
+    <div class="favorites-modal" id="favoritesModal">
+        <div class="favorites-content">
+            <div class="favorites-header">
+                <h2>Favori Konumlar</h2>
+                <button class="close-favorites" id="closeFavorites">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="favorites-body">
+                <div id="favoritesList">
+                    <!-- Favori konumlar buraya dinamik olarak eklenecek -->
+                </div>
+                <div id="recentSearches">
+                    <h3>Son Aramalar</h3>
+                    <!-- Son aramalar buraya dinamik olarak eklenecek -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="settings-button" id="settingsBtn">
+        <i class="fas fa-cog"></i>
+    </div>
+
+    <div class="settings-modal" id="settingsModal">
+        <div class="settings-content">
+            <div class="settings-header">
+                <h2>Ayarlar</h2>
+                <button class="close-settings" id="closeSettings">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="settings-body">
+                <div class="settings-group">
+                    <h3>Birimler</h3>
+                    <div class="setting-item">
+                        <label>Sıcaklık Birimi</label>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="tempUnit" class="toggle-input">
+                            <label for="tempUnit" class="toggle-label">
+                                <span class="toggle-option">°C</span>
+                                <span class="toggle-option">°F</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <label>Rüzgar Hızı Birimi</label>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="windUnit" class="toggle-input">
+                            <label for="windUnit" class="toggle-label">
+                                <span class="toggle-option">km/s</span>
+                                <span class="toggle-option">kt</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="settings-group">
+                    <h3>Görünüm</h3>
+                    <div class="setting-item">
+                        <label>Animasyonlar</label>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="animations" class="toggle-input" checked>
+                            <label for="animations" class="toggle-label">
+                                <span class="toggle-option">Kapalı</span>
+                                <span class="toggle-option">Açık</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="settings-group">
+                    <h3>Konum</h3>
+                    <div class="setting-item">
+                        <label>Otomatik Konum Tespiti</label>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="autoLocation" class="toggle-input">
+                            <label for="autoLocation" class="toggle-label">
+                                <span class="toggle-option">Kapalı</span>
+                                <span class="toggle-option">Açık</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <header>
+            <div class="logo">
+                <svg viewBox="0 0 24 24" width="48" height="48">
+                    <g class="weather-logo">
+                        <path class="cloud" d="M6,19 C3.790861,19 2,17.209139 2,15 C2,12.790861 3.790861,11 6,11 C6.37821,11 6.74457,11.0487 7.09202,11.1404 C7.03378,10.7963 7,10.4432 7,10.0833 C7,7.27167 9.27167,5 12.0833,5 C14.8950,5 17.1667,7.27167 17.1667,10.0833 C17.1667,10.4432 17.1329,10.7963 17.0747,11.1404 C17.4221,11.0487 17.7885,11 18.1667,11 C20.3758,11 22.1667,12.790861 22.1667,15 C22.1667,17.209139 20.3758,19 18.1667,19 L6,19 Z" fill="currentColor"/>
+                        <path class="lightning" d="M11,14 L9,14 L13,7 L13,10 L15,10 L11,17 Z" fill="#FFD700"/>
+                        <g class="rain-drops">
+                            <path class="drop1" d="M8,20 L7.5,22" stroke="currentColor" stroke-width="0.5" stroke-linecap="round"/>
+                            <path class="drop2" d="M12,20 L11.5,22" stroke="currentColor" stroke-width="0.5" stroke-linecap="round"/>
+                            <path class="drop3" d="M16,20 L15.5,22" stroke="currentColor" stroke-width="0.5" stroke-linecap="round"/>
+                        </g>
+                    </g>
+                </svg>
+                <h1>Hava Durumu</h1>
+            </div>
+            <div class="search-box">
+                <input type="text" id="cityInput" placeholder="Şehir ara...">
+                <button id="searchBtn"><i class="fas fa-search"></i></button>
+                <button id="locationBtn" title="Konumumu Bul"><i class="fas fa-map-marker-alt"></i></button>
+            </div>
+            <div class="location-suggestions"></div>
+        </header>
+
+        <main>
+            <div class="current-weather">
+                <div class="weather-info">
+                    <h2 id="cityName"></h2>
+                    <div class="temperature">
+                        <span id="currentTemp"></span>°C
+                    </div>
+                    <div class="temperature-feels">
+                        Hissedilen: <span id="feelsLike"></span>°C
+                    </div>
+                    <div class="weather-description" id="weatherDesc"></div>
+                </div>
+                <div class="weather-details">
+                    <!-- Detaylı bilgiler JavaScript ile doldurulacak -->
+                </div>
+                <div class="sun-info">
+                    <div class="sun-detail sunrise">
+                        <svg class="sunrise-icon" viewBox="0 0 24 24">
+                            <path class="horizon" d="M2 20h20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <g class="sun-group">
+                                <circle class="sun" cx="12" cy="12" r="4" fill="#FFD700"/>
+                                <line x1="12" y1="4" x2="12" y2="2" stroke="#FFD700" stroke-width="2" stroke-linecap="round"/>
+                                <line x1="5" y1="12" x2="3" y2="12" stroke="#FFD700" stroke-width="2" stroke-linecap="round"/>
+                                <line x1="21" y1="12" x2="19" y2="12" stroke="#FFD700" stroke-width="2" stroke-linecap="round"/>
+                            </g>
+                        </svg>
+                        <div class="detail-info">
+                            <div class="detail-label">Gün Doğumu</div>
+                            <div class="detail-value" id="sunrise"></div>
+                        </div>
+                    </div>
+                    <div class="sun-detail sunset">
+                        <svg class="sunset-icon" viewBox="0 0 24 24">
+                            <path class="horizon" d="M2 20h20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <g class="sun-group">
+                                <circle class="sun" cx="12" cy="12" r="4" fill="#FF8C00"/>
+                                <line x1="12" y1="4" x2="12" y2="2" stroke="#FF8C00" stroke-width="2" stroke-linecap="round"/>
+                                <line x1="5" y1="12" x2="3" y2="12" stroke="#FF8C00" stroke-width="2" stroke-linecap="round"/>
+                                <line x1="21" y1="12" x2="19" y2="12" stroke="#FF8C00" stroke-width="2" stroke-linecap="round"/>
+                            </g>
+                        </svg>
+                        <div class="detail-info">
+                            <div class="detail-label">Gün Batımı</div>
+                            <div class="detail-value" id="sunset"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="forecast" id="forecast">
+                <!-- Forecast cards will be added here dynamically -->
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html> 

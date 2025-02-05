@@ -148,47 +148,58 @@
         <main>
             <div class="current-weather">
                 <div class="weather-info">
-                    <h2 id="cityName"></h2>
-                    <div class="temperature">
-                        <span id="currentTemp"></span>°C
+                    <div class="weather-header">
+                        <h2 class="city-name" id="cityName"></h2>
                     </div>
-                    <div class="temperature-feels">
-                        Hissedilen: <span id="feelsLike"></span>°C
-                    </div>
-                    <div class="weather-description" id="weatherDesc"></div>
-                </div>
-                <div class="weather-details">
-                    <!-- Detaylı bilgiler JavaScript ile doldurulacak -->
-                </div>
-                <div class="sun-info">
-                    <div class="sun-detail sunrise">
-                        <svg class="sunrise-icon" viewBox="0 0 24 24">
-                            <path class="horizon" d="M2 20h20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                            <g class="sun-group">
-                                <circle class="sun" cx="12" cy="12" r="4" fill="#FFD700"/>
-                                <line x1="12" y1="4" x2="12" y2="2" stroke="#FFD700" stroke-width="2" stroke-linecap="round"/>
-                                <line x1="5" y1="12" x2="3" y2="12" stroke="#FFD700" stroke-width="2" stroke-linecap="round"/>
-                                <line x1="21" y1="12" x2="19" y2="12" stroke="#FFD700" stroke-width="2" stroke-linecap="round"/>
-                            </g>
-                        </svg>
-                        <div class="detail-info">
-                            <div class="detail-label">Gün Doğumu</div>
-                            <div class="detail-value" id="sunrise"></div>
+                    <div class="weather-body">
+                        <div class="weather-icon-container">
+                            <!-- Weather icon will be added here dynamically -->
+                        </div>
+                        <div class="weather-data">
+                            <div class="temperature">
+                                <span id="currentTemp"></span>
+                                <span class="unit">°C</span>
+                            </div>
+                            <div class="temperature-feels">
+                                Hissedilen: <span id="feelsLike"></span>
+                                <span class="unit">°C</span>
+                            </div>
+                            <div class="weather-description" id="weatherDesc"></div>
                         </div>
                     </div>
-                    <div class="sun-detail sunset">
-                        <svg class="sunset-icon" viewBox="0 0 24 24">
-                            <path class="horizon" d="M2 20h20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                            <g class="sun-group">
-                                <circle class="sun" cx="12" cy="12" r="4" fill="#FF8C00"/>
-                                <line x1="12" y1="4" x2="12" y2="2" stroke="#FF8C00" stroke-width="2" stroke-linecap="round"/>
-                                <line x1="5" y1="12" x2="3" y2="12" stroke="#FF8C00" stroke-width="2" stroke-linecap="round"/>
-                                <line x1="21" y1="12" x2="19" y2="12" stroke="#FF8C00" stroke-width="2" stroke-linecap="round"/>
-                            </g>
-                        </svg>
-                        <div class="detail-info">
-                            <div class="detail-label">Gün Batımı</div>
-                            <div class="detail-value" id="sunset"></div>
+                    <div class="weather-details">
+                        <!-- Weather details will be added here dynamically -->
+                    </div>
+                    <div class="sun-info">
+                        <div class="sun-detail sunrise">
+                            <svg class="sunrise-icon" viewBox="0 0 24 24">
+                                <path class="horizon" d="M2 20h20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <g class="sun-group">
+                                    <circle class="sun" cx="12" cy="12" r="4" fill="#FFD700"/>
+                                    <line x1="12" y1="4" x2="12" y2="2" stroke="#FFD700" stroke-width="2" stroke-linecap="round"/>
+                                    <line x1="5" y1="12" x2="3" y2="12" stroke="#FFD700" stroke-width="2" stroke-linecap="round"/>
+                                    <line x1="21" y1="12" x2="19" y2="12" stroke="#FFD700" stroke-width="2" stroke-linecap="round"/>
+                                </g>
+                            </svg>
+                            <div class="detail-info">
+                                <div class="detail-label">Gün Doğumu</div>
+                                <div class="detail-value" id="sunrise"></div>
+                            </div>
+                        </div>
+                        <div class="sun-detail sunset">
+                            <svg class="sunset-icon" viewBox="0 0 24 24">
+                                <path class="horizon" d="M2 20h20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <g class="sun-group">
+                                    <circle class="sun" cx="12" cy="12" r="4" fill="#FF8C00"/>
+                                    <line x1="12" y1="4" x2="12" y2="2" stroke="#FF8C00" stroke-width="2" stroke-linecap="round"/>
+                                    <line x1="5" y1="12" x2="3" y2="12" stroke="#FF8C00" stroke-width="2" stroke-linecap="round"/>
+                                    <line x1="21" y1="12" x2="19" y2="12" stroke="#FF8C00" stroke-width="2" stroke-linecap="round"/>
+                                </g>
+                            </svg>
+                            <div class="detail-info">
+                                <div class="detail-label">Gün Batımı</div>
+                                <div class="detail-value" id="sunset"></div>
+                            </div>
                         </div>
                     </div>
                 </div>

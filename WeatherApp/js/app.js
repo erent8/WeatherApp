@@ -869,77 +869,200 @@ class WeatherApp {
     }
 
     displayCurrentWeather(data) {
-        if (!data) {
-            console.error('Hava durumu verisi boş');
-            this.showError('Hava durumu verisi alınamadı.');
-            return;
-        }
-
         try {
+            if (!data) {
+                console.error('Hava durumu verisi boş');
+                this.showError('Hava durumu verisi alınamadı.');
+                return;
+            }
+
+            // Karşılama ekranını bilgi paneline dönüştür
+            const welcomeScreen = document.querySelector('.welcome-screen');
+            if (welcomeScreen) {
+                const temp = Math.round(this.convertTemp(data.main.temp, this.settings.tempUnit));
+                const description = this.capitalizeFirstLetter(data.weather?.[0]?.description || 'Bilgi yok');
+                const humidity = data.main?.humidity || 0;
+                const windSpeed = Math.round(this.convertWindSpeed(data.wind?.speed || 0, this.settings.windUnit));
+                
+                // Hava kalitesi indeksi için API çağrısı
+                if (data.coord) {
+                    this.getAirQuality(data.coord.lat, data.coord.lon).then(airQuality => {
+                        const aqi = airQuality?.list?.[0]?.main?.aqi || 1;
+                        const aqiText = this.getAQIText(aqi);
+
+                        // Aktivite önerisi oluştur
+                        const activitySuggestion = this.getActivitySuggestion(temp, data.weather[0].id, aqi);
+
+                        // Hava durumu uyarıları
+                        const warnings = this.getWeatherWarnings(data);
+
+                        welcomeScreen.innerHTML = `
+                            <div class="weather-summary">
+                                <div class="summary-header">
+                                    <h2>Günlük Hava Durumu Özeti</h2>
+                                </div>
+                                
+                                <div class="summary-details">
+                                    <div class="main-info">
+                                        <p class="temp-summary">${temp}°${this.settings.tempUnit} ve ${description}</p>
+                                        <p class="conditions">Nem: %${humidity} | Rüzgar: ${windSpeed} ${this.settings.windUnit}</p>
+                                    </div>
+
+                                    <div class="air-quality-section">
+                                        <h3>Hava Kalitesi</h3>
+                                        <div class="aqi-indicator ${this.getAQIClass(aqi)}">
+                                            <span class="aqi-value">${aqi}</span>
+                                            <span class="aqi-text">${aqiText}</span>
+                                        </div>
+                                        <p class="aqi-description">${this.getAQIDescription(aqi)}</p>
+                                    </div>
+
+                                    ${warnings.length > 0 ? `
+                                        <div class="weather-warnings">
+                                            <h3>Hava Durumu Uyarıları</h3>
+                                            <div class="warnings-list">
+                                                ${warnings.map(warning => `
+                                                    <div class="warning-item ${warning.severity}">
+                                                        <i class="${warning.icon}"></i>
+                                                        <span>${warning.message}</span>
+                                                    </div>
+                                                `).join('')}
+                                            </div>
+                                        </div>
+                                    ` : ''}
+
+                                    <div class="activity-suggestion">
+                                        <h3>Günlük Aktivite Önerisi</h3>
+                                        <div class="suggestion-content">
+                                            <i class="fas fa-lightbulb"></i>
+                                            <p>${activitySuggestion}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+
+                        // Stil güncellemeleri
+                        welcomeScreen.style.background = 'var(--card-background)';
+                        welcomeScreen.style.padding = '20px';
+                        welcomeScreen.style.borderRadius = '15px';
+                        welcomeScreen.style.marginBottom = '20px';
+                        welcomeScreen.style.boxShadow = 'var(--shadow)';
+                    });
+                }
+            }
+
             // Ana container'ı kontrol et
             const weatherInfo = document.querySelector('.weather-info');
             if (!weatherInfo) {
+                console.error('weather-info elementi bulunamadı');
                 throw new Error('Hava durumu bilgi container\'ı bulunamadı');
             }
 
-            // Gerekli DOM elementlerini kontrol et
-            const elements = {
-                cityName: document.getElementById('cityName'),
-                currentTemp: document.getElementById('currentTemp'),
-                weatherDesc: document.getElementById('weatherDesc'),
-                weatherDetails: document.querySelector('.weather-details'),
-                sunInfo: document.querySelector('.sun-info')
-            };
+            // Temel yapıyı oluştur
+            let weatherHeader = weatherInfo.querySelector('.weather-header');
+            let weatherBody = weatherInfo.querySelector('.weather-body');
+            let weatherData = weatherInfo.querySelector('.weather-data');
+            let weatherDetails = weatherInfo.querySelector('.weather-details');
 
-            // Eksik elementleri kontrol et
-            Object.entries(elements).forEach(([key, element]) => {
-                if (!element) {
-                    throw new Error(`${key} elementi bulunamadı`);
-                }
-            });
-
-            // Sıcaklık ve rüzgar birimlerini kontrol et
-            const tempUnit = this.settings.tempUnit || 'C';
-            const windUnit = this.settings.windUnit || 'km/s';
-
-            // Sıcaklık verilerini kontrol et
-            if (!data.main || typeof data.main.temp === 'undefined') {
-                throw new Error('Sıcaklık verisi eksik');
+            // Header bölümünü oluştur
+            if (!weatherHeader) {
+                console.log('weather-header oluşturuluyor...');
+                weatherHeader = document.createElement('div');
+                weatherHeader.className = 'weather-header';
+                weatherInfo.insertBefore(weatherHeader, weatherInfo.firstChild);
             }
 
-            // Sıcaklık dönüşümlerini yap
+            // Şehir adı elementini oluştur
+            let cityNameElement = weatherHeader.querySelector('.city-name');
+            if (!cityNameElement) {
+                console.log('city-name oluşturuluyor...');
+                cityNameElement = document.createElement('h2');
+                cityNameElement.className = 'city-name';
+                cityNameElement.id = 'cityName';
+                weatherHeader.appendChild(cityNameElement);
+            }
+
+            // Body bölümünü oluştur
+            if (!weatherBody) {
+                console.log('weather-body oluşturuluyor...');
+                weatherBody = document.createElement('div');
+                weatherBody.className = 'weather-body';
+                weatherInfo.appendChild(weatherBody);
+            }
+
+            // İkon container'ı oluştur
+            let iconContainer = weatherBody.querySelector('.weather-icon-container');
+            if (!iconContainer) {
+                console.log('weather-icon-container oluşturuluyor...');
+                iconContainer = document.createElement('div');
+                iconContainer.className = 'weather-icon-container';
+                weatherBody.appendChild(iconContainer);
+            }
+
+            // Weather data bölümünü oluştur
+            if (!weatherData) {
+                console.log('weather-data oluşturuluyor...');
+                weatherData = document.createElement('div');
+                weatherData.className = 'weather-data';
+                weatherBody.appendChild(weatherData);
+            }
+
+            // Sıcaklık elementlerini oluştur
+            if (!weatherData.querySelector('.temperature')) {
+                console.log('temperature elementi oluşturuluyor...');
+                const tempDiv = document.createElement('div');
+                tempDiv.className = 'temperature';
+                tempDiv.innerHTML = '<span id="currentTemp"></span><span class="unit">°C</span>';
+                weatherData.appendChild(tempDiv);
+            }
+
+            if (!weatherData.querySelector('.temperature-feels')) {
+                console.log('temperature-feels elementi oluşturuluyor...');
+                const feelsDiv = document.createElement('div');
+                feelsDiv.className = 'temperature-feels';
+                feelsDiv.innerHTML = 'Hissedilen: <span id="feelsLike"></span><span class="unit">°C</span>';
+                weatherData.appendChild(feelsDiv);
+            }
+
+            if (!weatherData.querySelector('.weather-description')) {
+                console.log('weather-description elementi oluşturuluyor...');
+                const descDiv = document.createElement('div');
+                descDiv.className = 'weather-description';
+                descDiv.id = 'weatherDesc';
+                weatherData.appendChild(descDiv);
+            }
+
+            // Weather details bölümünü oluştur
+            if (!weatherDetails) {
+                console.log('weather-details oluşturuluyor...');
+                weatherDetails = document.createElement('div');
+                weatherDetails.className = 'weather-details';
+                weatherInfo.appendChild(weatherDetails);
+            }
+
+            // Verileri güncelle
+            const tempUnit = this.settings.tempUnit || 'C';
             const temp = this.convertTemp(data.main.temp, tempUnit);
             const feelsLike = this.convertTemp(data.main.feels_like, tempUnit);
 
+            // Elementleri güncelle
+            cityNameElement.textContent = `${data.name || 'Bilinmeyen Şehir'}, ${data.sys?.country || 'TR'}`;
+            document.getElementById('currentTemp').textContent = Math.round(temp);
+            document.getElementById('feelsLike').textContent = Math.round(feelsLike);
+            document.getElementById('weatherDesc').textContent = this.capitalizeFirstLetter(data.weather?.[0]?.description || 'Bilgi yok');
+
             // Hava durumu ikonunu güncelle
-            const weatherIcon = this.createWeatherIcon(
-                data.weather?.[0]?.icon || '01d',
-                data.weather?.[0]?.description || 'bilinmeyen'
-            );
-            const existingIcon = weatherInfo.querySelector('.weather-icon-container');
-            if (existingIcon) {
-                existingIcon.remove();
-            }
-
-            // Temel bilgileri güncelle
-            elements.cityName.textContent = `${data.name || 'Bilinmeyen Şehir'}, ${data.sys?.country || 'TR'}`;
-            elements.currentTemp.textContent = Math.round(temp);
-            elements.weatherDesc.textContent = this.capitalizeFirstLetter(data.weather?.[0]?.description || 'Bilgi yok');
-
-            // Sıcaklık birimi güncelleme
-            const tempUnitElement = elements.currentTemp.nextElementSibling;
-            if (tempUnitElement) {
-                tempUnitElement.textContent = `°${tempUnit}`;
-            }
-
-            // Hissedilen sıcaklık güncelleme
-            const tempFeelsElement = weatherInfo.querySelector('.temperature-feels');
-            if (tempFeelsElement) {
-                tempFeelsElement.innerHTML = `Hissedilen: <span id="feelsLike">${Math.round(feelsLike)}</span>°${tempUnit}`;
-            }
+            const weatherIcon = this.createWeatherIcon(data.weather?.[0]?.icon || '01d', data.weather?.[0]?.description || 'bilinmeyen');
+            iconContainer.innerHTML = '';
+            iconContainer.appendChild(weatherIcon);
 
             // Hava durumu detaylarını güncelle
-            elements.weatherDetails.innerHTML = `
+            const precipitation = data.rain?.['1h'] || data.snow?.['1h'] || 0;
+            const precipitationType = data.rain ? 'Yağmur' : (data.snow ? 'Kar' : '');
+            const precipitationProbability = data.pop ? Math.round(data.pop * 100) : 0;
+
+            weatherDetails.innerHTML = `
                 <div class="detail">
                     <i class="fas fa-temperature-high"></i>
                     <div class="detail-info">
@@ -958,30 +1081,134 @@ class WeatherApp {
                     <i class="fas fa-wind"></i>
                     <div class="detail-info">
                         <div class="detail-label">Rüzgar</div>
-                        <div class="detail-value">${Math.round(this.convertWindSpeed(data.wind?.speed || 0, windUnit))} ${windUnit} ${this.getWindDirection(data.wind?.deg || 0)}</div>
+                        <div class="detail-value">${Math.round(this.convertWindSpeed(data.wind?.speed || 0, this.settings.windUnit))} ${this.settings.windUnit} ${this.getWindDirection(data.wind?.deg || 0)}</div>
                     </div>
                 </div>
                 <div class="detail">
-                    <i class="fas fa-tint"></i>
+                    <i class="fas fa-droplet"></i>
                     <div class="detail-info">
                         <div class="detail-label">Nem</div>
                         <div class="detail-value">%${data.main?.humidity || 0}</div>
                     </div>
                 </div>
+                ${precipitation > 0 || precipitationProbability > 0 ? `
+                <div class="detail precipitation-detail">
+                    <i class="fas fa-cloud-showers-heavy"></i>
+                    <div class="detail-info">
+                        <div class="detail-label">${precipitationType || 'Yağış'}</div>
+                        <div class="detail-value">
+                            ${precipitation > 0 ? `${precipitation.toFixed(1)} mm` : ''}
+                            ${precipitationProbability > 0 ? `<br>Olasılık: %${precipitationProbability}` : ''}
+                        </div>
+                    </div>
+                </div>` : ''}
+                <div class="detail">
+                    <i class="fas fa-compress-arrows-alt"></i>
+                    <div class="detail-info">
+                        <div class="detail-label">Basınç</div>
+                        <div class="detail-value">${data.main?.pressure || 0} hPa</div>
+                    </div>
+                </div>
+                <div class="detail">
+                    <i class="fas fa-mountain"></i>
+                    <div class="detail-info">
+                        <div class="detail-label">Rakım</div>
+                        <div class="detail-value">${Math.round(data.coord?.lat || 0)}m</div>
+                    </div>
+                </div>
+                <div class="detail">
+                    <i class="fas fa-eye"></i>
+                    <div class="detail-info">
+                        <div class="detail-label">Görüş Mesafesi</div>
+                        <div class="detail-value">${(data.visibility || 0) / 1000} km</div>
+                    </div>
+                </div>
+                <div class="detail">
+                    <i class="fas fa-cloud"></i>
+                    <div class="detail-info">
+                        <div class="detail-label">Bulutluluk</div>
+                        <div class="detail-value">%${data.clouds?.all || 0}</div>
+                    </div>
+                </div>
+                <div class="detail">
+                    <i class="fas fa-sun"></i>
+                    <div class="detail-info">
+                        <div class="detail-label">UV İndeksi</div>
+                        <div class="detail-value">${data.uvi || 0}</div>
+                    </div>
+                </div>
+                <div class="detail">
+                    <i class="fas fa-thermometer-half"></i>
+                    <div class="detail-info">
+                        <div class="detail-label">Çiy Noktası</div>
+                        <div class="detail-value">${Math.round(data.main?.dew_point || temp)}°${tempUnit}</div>
+                    </div>
+                </div>
+                <div class="detail">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <div class="detail-info">
+                        <div class="detail-label">Rüzgar Hamlesi</div>
+                        <div class="detail-value">${Math.round(this.convertWindSpeed(data.wind?.gust || 0, this.settings.windUnit))} ${this.settings.windUnit}</div>
+                    </div>
+                </div>
+                <div class="detail">
+                    <i class="fas fa-clock"></i>
+                    <div class="detail-info">
+                        <div class="detail-label">Yerel Saat</div>
+                        <div class="detail-value">${new Date(data.dt * 1000).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</div>
+                    </div>
+                </div>
             `;
 
-            // Güneş doğuş ve batış bilgilerini güncelle
-            if (elements.sunInfo && data.sys?.sunrise && data.sys?.sunset) {
-                elements.sunInfo.style.display = 'grid';
+            // Güneş bilgilerini güncelle
+            const sunInfo = weatherInfo.querySelector('.sun-info');
+            if (!sunInfo) {
+                const sunInfoDiv = document.createElement('div');
+                sunInfoDiv.className = 'sun-info';
+                sunInfoDiv.innerHTML = `
+                    <div class="sun-detail sunrise">
+                        <svg class="sunrise-icon" viewBox="0 0 24 24">
+                            <path class="horizon" d="M2 20h20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <g class="sun-group">
+                                <circle class="sun" cx="12" cy="12" r="4" fill="#FFD700"/>
+                                <line x1="12" y1="4" x2="12" y2="2" stroke="#FFD700" stroke-width="2" stroke-linecap="round"/>
+                                <line x1="5" y1="12" x2="3" y2="12" stroke="#FFD700" stroke-width="2" stroke-linecap="round"/>
+                                <line x1="21" y1="12" x2="19" y2="12" stroke="#FFD700" stroke-width="2" stroke-linecap="round"/>
+                            </g>
+                        </svg>
+                        <div class="detail-info">
+                            <div class="detail-label">Gün Doğumu</div>
+                            <div class="detail-value" id="sunrise"></div>
+                        </div>
+                    </div>
+                    <div class="sun-detail sunset">
+                        <svg class="sunset-icon" viewBox="0 0 24 24">
+                            <path class="horizon" d="M2 20h20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <g class="sun-group">
+                                <circle class="sun" cx="12" cy="12" r="4" fill="#FF8C00"/>
+                                <line x1="12" y1="4" x2="12" y2="2" stroke="#FF8C00" stroke-width="2" stroke-linecap="round"/>
+                                <line x1="5" y1="12" x2="3" y2="12" stroke="#FF8C00" stroke-width="2" stroke-linecap="round"/>
+                                <line x1="21" y1="12" x2="19" y2="12" stroke="#FF8C00" stroke-width="2" stroke-linecap="round"/>
+                            </g>
+                        </svg>
+                        <div class="detail-info">
+                            <div class="detail-label">Gün Batımı</div>
+                            <div class="detail-value" id="sunset"></div>
+                        </div>
+                    </div>
+                `;
+                weatherInfo.appendChild(sunInfoDiv);
+            }
+
+            // Güneş doğuş ve batış saatlerini güncelle
+            if (data.sys?.sunrise && data.sys?.sunset) {
                 const sunrise = document.getElementById('sunrise');
                 const sunset = document.getElementById('sunset');
-                
                 if (sunrise && sunset) {
                     sunrise.textContent = new Date(data.sys.sunrise * 1000).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
                     sunset.textContent = new Date(data.sys.sunset * 1000).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
                 }
-            } else {
-                elements.sunInfo.style.display = 'none';
+                document.querySelector('.sun-info').style.display = 'grid';
             }
 
             // Son hava durumu verisini sakla
@@ -990,8 +1217,6 @@ class WeatherApp {
         } catch (error) {
             console.error('Hava durumu görüntüleme hatası:', error);
             this.showError(`Hava durumu bilgileri görüntülenirken bir hata oluştu: ${error.message}`);
-            
-            // Karşılama ekranını göster
             this.displayWelcomeScreen();
         }
     }
@@ -1199,12 +1424,7 @@ class WeatherApp {
     }
 
     async initLocationFeatures() {
-        // Otomatik konum tespiti ayarı açıksa konum al
-        if (this.settings.autoLocation) {
-            await this.getCurrentLocation();
-        }
-        
-        // Favori ve son aranan konumları göster
+        // Sadece konum önerilerini göster
         this.displayLocationSuggestions();
     }
 
@@ -1217,48 +1437,93 @@ class WeatherApp {
             this.setLoading(true);
             
             const position = await new Promise((resolve, reject) => {
-                navigator.geolocation.getCurrentPosition(resolve, reject, {
-                    enableHighAccuracy: true,
-                    timeout: 5000,
-                    maximumAge: 0
-                });
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        console.log('Konum başarıyla alındı');
+                        resolve(pos);
+                    },
+                    (err) => {
+                        console.error('Konum hatası:', err);
+                        reject(err);
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 0
+                    }
+                );
             });
             
             const { latitude, longitude } = position.coords;
-            console.log('Konum alındı:', latitude, longitude);
+            console.log('Konum koordinatları:', { latitude, longitude });
             
-            // Önce reverse geocoding ile konum bilgisini al
-            const geoResponse = await fetch(`${this.apiUrl}/geo/1.0/reverse?lat=${latitude}&lon=${longitude}&limit=1&appid=${this.apiKey}`);
-            if (!geoResponse.ok) throw new Error('Konum bilgisi alınamadı');
+            // Önce reverse geocoding ile şehir adını al
+            const geoUrl = `https://api.openweathermap.org/geo/1.0/reverse?lat=${latitude}&lon=${longitude}&limit=1&appid=${this.apiKey}`;
+            console.log('Geo API isteği yapılıyor:', geoUrl);
+            
+            const geoResponse = await fetch(geoUrl);
+            if (!geoResponse.ok) {
+                throw new Error(`Geo API hatası: ${geoResponse.status}`);
+            }
             
             const geoData = await geoResponse.json();
-            console.log('Geo verisi:', geoData);
+            console.log('Geo API yanıtı:', geoData);
             
-            if (geoData.length > 0) {
-                const locationName = geoData[0].local_names?.tr || geoData[0].name;
-                this.cityInput.value = locationName;
-                
-                // Şimdi hava durumu bilgisini al
-                const weatherResponse = await fetch(`${this.apiUrl}/weather?q=${locationName},TR&appid=${this.apiKey}&units=metric&lang=tr`);
-                if (!weatherResponse.ok) throw new Error('Hava durumu bilgisi alınamadı');
-                
-                const weatherData = await weatherResponse.json();
-                console.log('Hava durumu verisi:', weatherData);
-                
-                this.displayCurrentWeather(weatherData);
-                
-                // Son aramalara ekle
-                this.addToRecentLocations({
-                    name: locationName,
-                    country: 'TR'
-                });
-            } else {
-                throw new Error('Konum bilgisi bulunamadı');
+            if (!geoData || geoData.length === 0) {
+                throw new Error('Şehir bilgisi alınamadı');
+            }
+            
+            const cityName = geoData[0].local_names?.tr || geoData[0].name;
+            console.log('Tespit edilen şehir:', cityName);
+            
+            // Şehir adıyla hava durumu bilgisini al
+            const weatherUrl = `${this.apiUrl}/weather?q=${encodeURIComponent(cityName)}&appid=${this.apiKey}&units=metric&lang=tr`;
+            console.log('Hava durumu API isteği yapılıyor:', weatherUrl);
+            
+            const weatherResponse = await fetch(weatherUrl);
+            if (!weatherResponse.ok) {
+                throw new Error(`Hava durumu API hatası: ${weatherResponse.status}`);
+            }
+            
+            const weatherData = await weatherResponse.json();
+            console.log('Hava durumu verisi:', weatherData);
+
+            // Şehir adını ve hava durumunu güncelle
+            this.cityInput.value = cityName;
+            this.displayCurrentWeather(weatherData);
+            
+            // Son aramalara ekle
+            this.addToRecentLocations({
+                name: cityName,
+                country: 'TR'
+            });
+
+            // 5 günlük tahmin için istek yap
+            const forecastUrl = `${this.apiUrl}/forecast?q=${encodeURIComponent(cityName)}&appid=${this.apiKey}&units=metric&lang=tr`;
+            console.log('Tahmin API isteği yapılıyor:', forecastUrl);
+            
+            const forecastResponse = await fetch(forecastUrl);
+            if (forecastResponse.ok) {
+                const forecastData = await forecastResponse.json();
+                this.displayForecast(forecastData);
             }
             
         } catch (error) {
-            console.error('Konum hatası:', error);
-            this.showError('Konum alınamadı: ' + error.message);
+            console.error('Konum hatası detayları:', error);
+            let errorMessage = 'Konum alınamadı: ';
+            
+            if (error.code === 1) {
+                errorMessage += 'Konum izni reddedildi. Lütfen tarayıcı ayarlarından konum iznini etkinleştirin.';
+            } else if (error.code === 2) {
+                errorMessage += 'Konum bilgisi alınamadı. Lütfen internet bağlantınızı kontrol edin.';
+            } else if (error.code === 3) {
+                errorMessage += 'Konum tespiti zaman aşımına uğradı. Lütfen tekrar deneyin.';
+            } else {
+                errorMessage += error.message || 'Bilinmeyen bir hata oluştu.';
+            }
+            
+            this.showError(errorMessage);
+            this.displayWelcomeScreen();
         } finally {
             this.setLoading(false);
         }
@@ -1346,11 +1611,162 @@ class WeatherApp {
         if (forecast) forecast.style.display = 'none';
         if (sunInfo) sunInfo.style.display = 'none';
     }
+
+    async getAirQuality(lat, lon) {
+        try {
+            const response = await fetch(`${this.apiUrl}/air_pollution?lat=${lat}&lon=${lon}&appid=${this.apiKey}`);
+            if (!response.ok) {
+                throw new Error('Hava kalitesi verisi alınamadı');
+            }
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Hava kalitesi verisi alınamadı:', error);
+            return {
+                list: [{
+                    main: {
+                        aqi: 1 // Varsayılan değer
+                    }
+                }]
+            };
+        }
+    }
+
+    getAQIText(aqi) {
+        const aqiTexts = {
+            1: 'İyi',
+            2: 'Makul',
+            3: 'Orta',
+            4: 'Kötü',
+            5: 'Çok Kötü'
+        };
+        return aqiTexts[aqi] || 'Bilinmiyor';
+    }
+
+    getAQIClass(aqi) {
+        const aqiClasses = {
+            1: 'aqi-good',
+            2: 'aqi-fair',
+            3: 'aqi-moderate',
+            4: 'aqi-poor',
+            5: 'aqi-very-poor'
+        };
+        return aqiClasses[aqi] || 'aqi-unknown';
+    }
+
+    getAQIDescription(aqi) {
+        const descriptions = {
+            1: 'Hava kalitesi mükemmel! Dışarıda vakit geçirmek için ideal.',
+            2: 'Hava kalitesi iyi durumda. Normal aktivitelerinizi yapabilirsiniz.',
+            3: 'Hassas gruplar için dikkatli olunmalı.',
+            4: 'Uzun süreli dış mekan aktivitelerinden kaçının.',
+            5: 'Dış mekan aktivitelerinden kaçının. Mümkünse içeride kalın.'
+        };
+        return descriptions[aqi] || 'Hava kalitesi bilgisi mevcut değil.';
+    }
+
+    getActivitySuggestion(temp, weatherId, aqi) {
+        // Hava durumu kodlarına göre öneriler
+        if (aqi >= 4) {
+            return 'Hava kalitesi düşük olduğu için iç mekan aktiviteleri önerilir.';
+        }
+
+        if (temp > 30) {
+            return 'Aşırı sıcak! Su sporları veya yüzme tercih edilebilir. Saat 11:00-15:00 arası dışarı çıkmamaya özen gösterin.';
+        } else if (temp > 25) {
+            return 'Sıcak bir gün! Park gezintisi, piknik veya bahçe aktiviteleri için uygun. Bol su için ve güneş kremi kullanın.';
+        } else if (temp > 20) {
+            return 'Harika bir hava! Yürüyüş, koşu veya bisiklet sürüşü için ideal.';
+        } else if (temp > 10) {
+            return 'Ilıman bir gün. Açık hava aktiviteleri için uygun, hafif bir hırka yanınızda bulundurabilirsiniz.';
+        } else if (temp > 0) {
+            return 'Serin bir gün. Yürüyüş veya koşu için uygun, kalın giyinin.';
+        } else {
+            return 'Soğuk bir gün! İç mekan aktiviteleri tercih edilebilir. Dışarı çıkmanız gerekirse çok kalın giyinin.';
+        }
+    }
+
+    getWeatherWarnings(data) {
+        const warnings = [];
+        const temp = Math.round(this.convertTemp(data.main.temp, this.settings.tempUnit));
+        const windSpeed = Math.round(this.convertWindSpeed(data.wind?.speed || 0, this.settings.windUnit));
+        const humidity = data.main?.humidity || 0;
+        const weatherId = data.weather?.[0]?.id;
+
+        // Sıcaklık uyarıları
+        if (temp >= 35) {
+            warnings.push({
+                severity: 'severe',
+                icon: 'fas fa-thermometer-full',
+                message: 'Aşırı sıcak hava! Lütfen önlem alın ve mümkünse dışarı çıkmayın.'
+            });
+        } else if (temp <= 0) {
+            warnings.push({
+                severity: 'severe',
+                icon: 'fas fa-thermometer-empty',
+                message: 'Dondurucu soğuk! Dikkatli olun ve kalın giyinin.'
+            });
+        }
+
+        // Rüzgar uyarıları
+        if (windSpeed > 50) {
+            warnings.push({
+                severity: 'severe',
+                icon: 'fas fa-wind',
+                message: 'Şiddetli rüzgar! Açık alanda dikkatli olun.'
+            });
+        } else if (windSpeed > 30) {
+            warnings.push({
+                severity: 'moderate',
+                icon: 'fas fa-wind',
+                message: 'Kuvvetli rüzgar bekleniyor.'
+            });
+        }
+
+        // Nem uyarıları
+        if (humidity > 80 && temp > 25) {
+            warnings.push({
+                severity: 'moderate',
+                icon: 'fas fa-tint',
+                message: 'Yüksek nem ve sıcaklık! Bunaltıcı hava koşulları.'
+            });
+        }
+
+        // Hava durumu kodlarına göre uyarılar
+        if (weatherId >= 200 && weatherId < 300) {
+            warnings.push({
+                severity: 'severe',
+                icon: 'fas fa-bolt',
+                message: 'Fırtına aktivitesi! Açık alanlardan uzak durun.'
+            });
+        } else if (weatherId >= 500 && weatherId < 600) {
+            warnings.push({
+                severity: 'moderate',
+                icon: 'fas fa-cloud-rain',
+                message: 'Yağmurlu hava, şemsiye bulundurun.'
+            });
+        } else if (weatherId >= 600 && weatherId < 700) {
+            warnings.push({
+                severity: 'moderate',
+                icon: 'fas fa-snowflake',
+                message: 'Kar yağışı bekleniyor, dikkatli olun.'
+            });
+        }
+
+        return warnings;
+    }
 }
 
 // Uygulama başlatma
 document.addEventListener('DOMContentLoaded', () => {
     const app = new WeatherApp();
+    app.displayWelcomeScreen(); // Başlangıçta karşılama ekranını göster
+    
+    // Güneş bilgisi bölümünü gizle
     const sunInfo = document.querySelector('.sun-info');
     if (sunInfo) sunInfo.style.display = 'none';
+    
+    // Tahmin bölümünü gizle
+    const forecast = document.getElementById('forecast');
+    if (forecast) forecast.style.display = 'none';
 }); 

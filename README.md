@@ -1,37 +1,37 @@
 # WeatherApp 🌤️
 
-Modern ve kullanıcı dostu bir hava durumu uygulaması. Tüm dünyaya ait şehirler için anlık ve 5 günlük hava durumu tahminlerini görüntüleyin.
+A modern and user-friendly weather application. View current and 5-day weather forecasts for cities around the world.
 
-## Özellikler ✨
+## Features ✨
 
-- **Anlık Hava Durumu**: Seçilen şehir için detaylı hava durumu bilgisi
-- **5 Günlük Tahmin**: Günlük ve saatlik hava durumu tahminleri
-- **Konum Tespiti**: Otomatik konum tespiti ile bulunduğunuz yerin hava durumu
-- **Favori Şehirler**: Sık kullandığınız şehirleri favorilere ekleme
-- **Son Aramalar**: Son 5 aramanızı otomatik kaydetme
-- **Şehir Önerileri**: Yazarken otomatik şehir önerileri
-- **Tema Seçenekleri**: Aydınlık/Karanlık tema desteği
-- **Birim Seçenekleri**: Sıcaklık (°C/°F) ve rüzgar hızı (km/s/knot) birimleri
-- **Animasyonlar**: Hava durumuna göre özel animasyonlar
-- **Responsive Tasarım**: Tüm cihazlara uyumlu arayüz
+- **Instant Weather**: Detailed weather information for the selected city
+- **5 Day Forecast**: Daily and hourly weather forecasts
+- **Location Detection**: Weather forecast of your current location with automatic location detection
+- **Favorite Cities**: Adding your favorite cities to favorites
+- **Recent Calls**: Auto save your last 5 calls
+- **City Suggestions**: Automatic city suggestions as you type
+- **Theme Options**: Light/Dark theme support
+- **Unit Options**: Temperature (°C/°F) and wind speed (km/h/knot) units
+- **Animations**: Special animations according to the weather
+- **Responsive Design**: Interface compatible with all devices
 
-## Kullanılan Teknolojiler 🛠️
+## Technologies Used 🛠️
 
 - HTML5
-- CSS3
+-CSS3
 - JavaScript (ES6+)
 - OpenWeatherMap API
-- Chart.js (Grafik gösterimi için)
-- Font Awesome (İkonlar için)
+- Chart.js (For graphic display)
+- Font Awesome (for Icons)
 
-## Kurulum 📦
+## Installation 📦
 
-1. Projeyi klonlayın:
+1. Clone the project:
 ```bash
 git clone https://github.com/erent8/WeatherApp.git
 ```
 
-2. Proje dizinine gidin:
+2. Go to the project directory:
 ```bash
 cd WeatherApp.git
 ```

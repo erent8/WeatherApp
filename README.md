@@ -1,5 +1,5 @@
 # WeatherApp 🌤️
-
+ 
 A modern and user-friendly weather application. View current and 5-day weather forecasts for cities around the world.
 
 ## Features ✨
